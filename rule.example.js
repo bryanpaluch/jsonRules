@@ -7,8 +7,8 @@ var ruleHeat = {
   ],
   then:
     {
-      Catalog['tempSensor'].set({relay1: on});
+      _catalog : {name: 'setSensor', 
+                  attr: [{relay1: true}]}
     }
 };
 
-  
