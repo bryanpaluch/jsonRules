@@ -1,17 +1,17 @@
 var _ = require('underscore');
 
-function fnCatalog( options){
+function FnCatalog( options){
   this.opts = options;
   this.catalog = {};
 
 }
-fnCatalog.prototype.addFn(fn, name, context, validator){
+FnCatalog.prototype.addFn(fn, name, context, validator){
   validator = validator ? validator : (function(){return true;});
   this.catalog[name] = { fn: _.bind(fn, context)
                          validator: validator};
 
 }
-fnCatalog.prototype.getFn(name, validate){
+FnCatalog.prototype.getFn(name, validate){
   if(this.catalog[name]){
     if(validate){
       if(this.catalog[name].validator(validate));
@@ -26,4 +26,4 @@ fnCatalog.prototype.getFn(name, validate){
     return null;
   }
 }
-modules.export = fnCatalog;
+modules.export = FnCatalog;
