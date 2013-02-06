@@ -12,7 +12,6 @@ function JsonRules( options){
 //false if rule doesn't
 
 JsonRules.prototype.doRule= function(rule, value){
-  console.log('testing rule', rule);
   this.test(rule.ifs, value, function(result){
     if(result){
       console.log('rule passed');
@@ -24,47 +23,56 @@ JsonRules.prototype.doRule= function(rule, value){
 
 JsonRules.prototype.test = function(ifs, value, cb){
   var self = this; 
-  var ifarray = (typeof ifs  == 'array') ?  ifs : [ifs];
+  var ifarray = (_.isArray(ifs)) ?  ifs : [ifs];
   var testFns = _.map(ifarray, function(i){
-      console.log('array', i); 
-      return self._testIf(cb, i, value)});
-  console.log(testFns); 
+    return function(innerCb){
+      self._testIf(innerCb, i, value);
+    }
+  });
   async.parallel(testFns, function(err, results){
-    if(err){return false;}
-    else return true;
+    if(err)
+      cb(false);
+    else 
+      cb(true);
   });
 }
 
 JsonRules.prototype._testIf =  function(cb, ifstatement, value){
-  console.log("testing if"); 
-  console.log(cb);
-  console.log(ifstatement);
-  console.log(value);
-  var attr1 = parse(ifstatement.attributes[0]);
-  var attr2 = parse(ifstatement.attributes[1]);
+  var attr1 = parse(ifstatement.operands[0]);
+  var attr2 = parse(ifstatement.operands[1]);
   //test each attr if they are _object or Catalog functions
   if(attr1._object)
     var func1 = function(cb){cb(null, value[attr1._object])};
+  else if(attr1._value)
+    var func1 = function(cb){cb(null, attr1._value)};
+  
   if(attr2._object)
     var func2 = function(cb){cb(null, value[attr2._object])};
-
+  else if(attr2._value)
+    var func2 = function(cb){cb(null, attr2._value)};
+  
   async.parallel([func1, func2], function(err, results){
-    console.log(results); 
-    switch(ifstatement.operand){
+    var result = null;
+    switch(ifstatement.test){
       case '<':
-        return results[0] < results[1];
+        result = results[0] < results[1];
         break;
       case '==':
-        return results[0] == results[1];
+        result = results[0] == results[1];
         break;
       case '>':
-        return results[0] > results[1];
+        result = results[0] > results[1];
         break;
       case '!=':
-        return results[0] != results[1];
+        result = results[0] != results[1];
         break;
       default:
-        return false;
+        result = false;
+    }
+    if(result){
+      cb(null, true);
+    }else{
+      cb("error", false);
     }
   });
 }
@@ -72,12 +80,12 @@ JsonRules.prototype._testIf =  function(cb, ifstatement, value){
 // "_object.foo"
 // {_object: foo}
 function parse(attribute){
-  if(typeof attribute == "string"){
-    var ar = attribute.split(attribute, '.');
+  if(_.isString(attribute)){
+    var ar = attribute.split('.');
     var obj = {};
-    obj[ar[i]] = ar[i+1];
+    obj[ar[0]] = ar[1];
     return obj;
-  }else if(typeof attribute == "object"){
+  }else if(_.isObject(attribute)){
     return attribute;
   }
 }
