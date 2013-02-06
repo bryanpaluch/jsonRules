@@ -1,7 +1,7 @@
 
 var ruleHeat = {
   if : [ 
-    { attributes: [ _object.temp, _object.setTemp],
+    { attributes: [ '_object.temp', '_object.setTemp'],
       operand: '>',
     },
   ],
