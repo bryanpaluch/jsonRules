@@ -1,8 +1,8 @@
 
 var ruleHeat = {
-  if : [ 
+  ifs : [ 
     { attributes: [ '_object.temp', '_object.setTemp'],
-      operand: '>',
+      operand: '<',
     },
   ],
   then:
@@ -11,4 +11,4 @@ var ruleHeat = {
                   attr: [{relay1: true}]}
     }
 };
-
+module.exports = ruleHeat;
