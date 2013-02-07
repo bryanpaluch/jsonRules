@@ -1,6 +1,6 @@
 {
   "name": "jsonRules",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "ERROR: No README.md file found!",
   "main": "test.js",
   "scripts": {
@@ -10,10 +10,21 @@
     "type": "git",
     "url": "https://github.com/bryanpaluch/jsonRules"
   },
-  "author": "",
+  "author": "Bryan Paluch",
   "license": "MIT",
   "dependencies": {
     "async": "~0.2.3",
     "underscore": "~1.4.4"
-  }
+  },
+  "gitHead": "220441c1bf795c423c18b5aab0f9def764d408e6",
+  "directories": {
+    "test": "tests",
+    "example": "example"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "rules",
+    "json",
+    "engine"
+  ]
 }

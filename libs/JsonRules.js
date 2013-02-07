@@ -3,7 +3,8 @@ var async = require('async');
 
 
 function JsonRules( options){
-  this.catalog = options.catalog;
+  var options = options ? options : {};
+  this.catalog = (options.catalog) ? options.catalog : {};
 }
 //Tests the if section of a rule returns a true callback
 //if rule passes
@@ -31,7 +32,7 @@ JsonRules.prototype.test = function(ifs, value, cb){
   var ifarray = (_.isArray(ifs)) ?  ifs : [ifs];
   var testFns = _.map(ifarray, function(i){
     return function(innerCb){
-      self._testIf(innerCb, i, value);
+      self._testIf( i, value, innerCb);
     }
   });
   async.parallel(testFns, function(err, results){
@@ -42,7 +43,7 @@ JsonRules.prototype.test = function(ifs, value, cb){
   });
 }
 
-JsonRules.prototype._testIf =  function(cb, ifstatement, value){
+JsonRules.prototype._testIf =  function(ifstatement, value, cb){
   var attr1 = parse(ifstatement.operands[0]);
   var attr2 = parse(ifstatement.operands[1]);
   //test each attr if they are _object or Catalog functions
@@ -83,10 +84,8 @@ JsonRules.prototype._testIf =  function(cb, ifstatement, value){
 }
 JsonRules.prototype.getThen = function(rule, values){
   if(rule.then._catalog){
-    console.log('then is a catalog type rule, grabbing from fnCatalog');
     var fn = this.catalog.getFn(rule.then._catalog.name);
     if(fn){
-      console.log('got fn from catalog, testing then for attributes to pass to function');
       if(rule.then._catalog.args){
          var argsObj = _.map(rule.then._catalog.args, function(attr){return parse(attr);});
          var appliedArgs = _.map(argsObj, function(arg){
@@ -100,7 +99,7 @@ JsonRules.prototype.getThen = function(rule, values){
         return (function(){fn.apply(this,appliedArgs)});
       }
       else
-        return (function(){fn()});
+        return (function(){fn.apply(this)});
     }else{
       return null;
     }
