@@ -1,6 +1,6 @@
-var JsonRules = require('../libs/JsonRules.js');
+var JsonRules = require('../index').JsonRules;
+var FnCatalog = require('../index').FnCatalog;
 
-var FnCatalog = require('../libs/FnCatalog.js');
 var catalog = new FnCatalog();
 
 var setTemp = function(word){console.log('Setting Temperature ' + word);

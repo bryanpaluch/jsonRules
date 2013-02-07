@@ -1,5 +1,5 @@
-var JsonRules = require('../libs/JsonRules');
-var FnCatalog = require('../libs/FnCatalog.js');
+var JsonRules = require('../index').JsonRules;
+var FnCatalog = require('../index').FnCatalog;
 var assert = require("assert");
 var _ = require('underscore');
 

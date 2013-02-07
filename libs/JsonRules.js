@@ -44,20 +44,19 @@ JsonRules.prototype.test = function(ifs, value, cb){
 }
 
 JsonRules.prototype._testIf =  function(ifstatement, value, cb){
-  var attr1 = parse(ifstatement.operands[0]);
-  var attr2 = parse(ifstatement.operands[1]);
-  //test each attr if they are _object or Catalog functions
-  if(attr1._object)
-    var func1 = function(cb){cb(null, value[attr1._object])};
-  else if(attr1._value)
-    var func1 = function(cb){cb(null, attr1._value)};
-  
-  if(attr2._object)
-    var func2 = function(cb){cb(null, value[attr2._object])};
-  else if(attr2._value)
-    var func2 = function(cb){cb(null, attr2._value)};
-  
-  async.parallel([func1, func2], function(err, results){
+  var operands = _.map(ifstatement.operands, parse);
+  //test each attr if they are _object, _value or Catalog functions
+  //return the async capatible function for returning that value
+  var fns = _.map(operands, function(operand){
+    if(operand._object)
+      return function(cb){cb(null, value[operand._object])};
+    else if(operand._value)
+      return function(cb){cb(null, operand._value)};
+  });
+  //get values and then test
+  //cb is (null, true) or ("error", false) in order to short circuit
+  //rules that are false
+  async.parallel(fns, function(err, results){
     var result = null;
     switch(ifstatement.test){
       case '<':

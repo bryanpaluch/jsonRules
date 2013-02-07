@@ -1,4 +1,4 @@
-var FnCatalog = require('../libs/FnCatalog');
+var FnCatalog = require('../index').FnCatalog;
 var assert = require("assert");
 var _ = require('underscore');
 
