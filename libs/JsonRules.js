@@ -96,10 +96,10 @@ JsonRules.prototype.getThen = function(rule, values){
            else
              return null;
         });
-        return (function(){fn.apply(this,appliedArgs)});
+        return (function(){return fn.apply(this,appliedArgs)});
       }
       else
-        return (function(){fn.apply(this)});
+        return (function(){return fn.apply(this)});
     }else{
       return null;
     }

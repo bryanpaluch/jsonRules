@@ -72,8 +72,6 @@ describe("JsonRules.doRule", function(){
     var ruleEngine = new JsonRules({catalog: catalog});
     ruleEngine.doRule(exampleRule, value1, function(err, fn){
       if(fn){
-      console.log('testing');
-      console.log(fn());
       assert.equal(fn(), exampleThen());
       done();
       }else

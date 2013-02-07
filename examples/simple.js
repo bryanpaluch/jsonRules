@@ -3,7 +3,8 @@ var JsonRules = require('../libs/JsonRules.js');
 var FnCatalog = require('../libs/FnCatalog.js');
 var catalog = new FnCatalog();
 
-var setTemp = function(word){console.log('Setting Temperature ' + word)};
+var setTemp = function(word){console.log('Setting Temperature ' + word);
+return word};
 catalog.addFn(setTemp, 'setTemp', this);
 
 
