@@ -1,6 +1,6 @@
 {
   "name": "jsonrules",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A rule engine with pure json based syntax and function catalog",
   "main": "index.js",
   "scripts": {
