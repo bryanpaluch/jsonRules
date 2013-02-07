@@ -32,35 +32,54 @@ JsonRules.prototype.test = function(ifs, value, cb){
   var ifarray = (_.isArray(ifs)) ?  ifs : [ifs];
   var testFns = _.map(ifarray, function(i){
     return function(innerCb){
-      self._testIf( i, value, innerCb);
+      return self._testIf( i, value, innerCb);
     }
   });
   async.parallel(testFns, function(err, results){
-    if(err)
+    if(err){
       cb(false);
+    }
     else 
       cb(true);
   });
 }
 
-JsonRules.prototype._testIf =  function(ifstatement, value, cb){
+JsonRules.prototype._testIf =  function(ifstatement, values, cb){
+  var self = this;
   var operands = _.map(ifstatement.operands, parse);
   //test each attr if they are _object, _value or Catalog functions
   //return the async capatible function for returning that value
   var fns = _.map(operands, function(operand){
     if(operand._object)
-      return function(cb){cb(null, value[operand._object])};
+      return function(cb){cb(null, values[operand._object])};
     else if(operand._value)
       return function(cb){cb(null, operand._value)};
+    else if(operand._catalog){
+      var fn = self.getWrappedCatalogFn(operand._catalog, values);
+        if(fn){
+          return function(cb){return fn(cb)};
+        }
+        else
+          return function(cb){return cb("error", false);};
+    }
   });
   //get values and then test
   //cb is (null, true) or ("error", false) in order to short circuit
   //rules that are false
   async.parallel(fns, function(err, results){
+    if(err){
+      return cb("error", false);
+    }
     var result = null;
     switch(ifstatement.test){
       case '<':
         result = results[0] < results[1];
+        break;
+      case '>=':
+        result = results[0] >= results[1];
+        break;
+      case '<=':
+        result = results[0] <= results[1];
         break;
       case '==':
         result = results[0] == results[1];
@@ -71,38 +90,51 @@ JsonRules.prototype._testIf =  function(ifstatement, value, cb){
       case '!=':
         result = results[0] != results[1];
         break;
+      case '!==':
+        result = results[0] !== results[1];
+        break;
+      case '===':
+        result = results[0] === results[1];
+        break;
       default:
         result = false;
     }
     if(result){
-      cb(null, true);
+      return cb(null, true);
     }else{
-      cb("error", false);
+      return cb("error", false);
     }
   });
 }
-JsonRules.prototype.getThen = function(rule, values){
-  if(rule.then._catalog){
-    var fn = this.catalog.getFn(rule.then._catalog.name);
+JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
+    var fn = this.catalog.getFn(catalog.name);
     if(fn){
-      if(rule.then._catalog.args){
-         var argsObj = _.map(rule.then._catalog.args, function(attr){return parse(attr);});
-         var appliedArgs = _.map(argsObj, function(arg){
-           if(arg._object)
-             return values[arg._object];
-           else if(arg._value)
-             return arg._value;
-           else
-             return null;
+      if(catalog.args){
+        var argsObj = _.map(catalog.args, function(attr){return parse(attr);});
+        var appliedArgs = _.map(argsObj, function(arg){
+          if(arg._object)
+            return values[arg._object];
+          else if(arg._value)
+            return arg._value;
+          else
+            return null;
         });
-        return (function(){return fn.apply(this,appliedArgs)});
+        return (function(cb){
+          appliedArgs.push(cb); 
+          return fn.apply(this,appliedArgs)});
       }
       else
-        return (function(){return fn.apply(this)});
+        return (function(cb){return fn.apply(this, cb)});
     }else{
       return null;
     }
-  }else
+}
+JsonRules.prototype.getThen = function(rule, values){
+  if(rule.then._catalog){
+    var fn = this.getWrappedCatalogFn(rule.then._catalog, values);
+    return fn; 
+  } 
+  else
     return null;
 }
 //returns an object from a period separated object ie
