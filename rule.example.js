@@ -1,14 +1,19 @@
-
 var ruleHeat = {
-  ifs : [ 
-    { attributes: [ '_object.temp', '_object.setTemp'],
-      operand: '<',
+  ifs : [
+    { operands: [ '_object.temp', '_object.setTemp'],
+      test: '<',
+    },
+    { operands: [ '_object.relay', {_value: 1}],
+      test: '==',
     },
   ],
   then:
     {
-      _catalog : {name: 'setSensor', 
-                  attr: [{relay1: true}]}
+      _catalog : {name: 'setTemp', 
+                  args: ['_object.setTemp']}
     }
 };
+
+
 module.exports = ruleHeat;
+
