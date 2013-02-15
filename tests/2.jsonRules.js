@@ -140,6 +140,20 @@ describe("JsonRules.doRule", function(){
       done('error');
     });
   });
+  it("tests a rule, and callbacks with fn if it passes, the fn is wrapped and can also receive a cb", function(done){
+    var exampleThen = function(word,cb){return cb()}
+    var catalog = new FnCatalog();
+    catalog.addFn(exampleThen, 'setTemp', this);
+    var ruleEngine = new JsonRules({catalog: catalog});
+    ruleEngine.doRule(exampleRule, value1, function(err, fn){
+      if(fn){
+      fn(function(){
+        done();
+      });
+      }else
+      done('error');
+    });
+  });
   it("tests a rule, and callback with no fn if it fails ", function(done){
     var exampleThen = function(word){return "example"}
     var catalog = new FnCatalog();

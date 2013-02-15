@@ -137,7 +137,7 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
           return fn.apply(this,appliedArgs)});
       }
       else
-        return (function(cb){return fn.apply(this, cb)});
+        return (function(cb){return fn.apply(this, [cb])});
     }else{
       return null;
     }
