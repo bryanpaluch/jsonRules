@@ -32,6 +32,7 @@ var ruleHeat = {
 
 ruleEngine.doRule(ruleHeat, {temp: 60, setTemp: 62, relay: 1}, function(err, then){
   if(err){
+    console.log(err);
     console.log("received error while applying rule logic");
   }
   if(then){

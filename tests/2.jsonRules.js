@@ -61,7 +61,11 @@ var shortCircuitRule = {
                   args: ['_object.temp']}
     }
 };
-
+var badFormatIfs =
+    { operands: [ '_ovject.relay', '_object.relay'
+                ],
+      test: '=='
+    };
 
 var getOtherSensorByUserId = function(userid, timeout,cb){
   setTimeout(function(){
@@ -89,25 +93,34 @@ describe("JsonRules._testIf", function(){
       done();
     });
   });
-  it("tests an individual if statement,  returns (\"error\",null) if false", function(done){
+  it("tests an individual if statement,  returns (\"short-circuit\",false) if false with no errors", function(done){
     var ruleEngine = new JsonRules();
     ruleEngine._testIf(ifs[0], value2, function(err, results){
-      assert.equal(err, "error");
+      assert.equal(err, "short-circuit");
+      assert.equal(results, false);
+      done();
+    });
+  });
+  it("tests an individual if statement,  returns (new Error,false) if there are errors", function(done){
+    var ruleEngine = new JsonRules();
+    ruleEngine._testIf(badFormatIfs, value2, function(err, results){
+      assert.equal(typeof err, typeof (new Error("Some error")));
+      assert.equal(results, false);
       done();
     });
   });
 });
 describe("JsonRules.test", function(){
-  it("tests an array of if statements, and callbacks true if they pass", function(done){
+  it("tests an array of if statements, and callbacks(null, true) if they pass", function(done){
     var ruleEngine = new JsonRules();
-    ruleEngine.test(ifs, value1, function(result){
+    ruleEngine.test(ifs, value1, function(err, result){
       assert.equal(result, true);
       done();
     });
   });
-  it("tests an array of if statements, and callbacks false if they fail", function(done){
+  it("tests an array of if statements, and callbacks (null, false) if they fail with no errors", function(done){
     var ruleEngine = new JsonRules();
-    ruleEngine.test(ifs, value2, function(result){
+    ruleEngine.test(ifs, value2, function(err, result){
       assert.equal(result, false);
       done();
     });
@@ -149,12 +162,12 @@ describe("JsonRules.doRule", function(){
         assert.equal(fn(), exampleThen());
         done();
       }else{
-        throw("Should have received Then but didn't"); 
+        throw(new Error("Should have received Then but didn't"));
       }
     });
   });
   it("tests a rule with an catalog attribute and returns a null fn after the first false if statement fails", function(done){
-    this.timeout(1200); 
+    this.timeout(2000); 
     var exampleThen = function(word){return "example"}
     var catalog = new FnCatalog();
     catalog.addFn(exampleThen, 'setTemp', this);
@@ -162,7 +175,7 @@ describe("JsonRules.doRule", function(){
     var ruleEngine = new JsonRules({catalog: catalog});
     ruleEngine.doRule(shortCircuitRule, value1, function(err, fn){
       if(fn){
-        throw("Shouldn't have returned a function"); 
+        throw(new Error("Shouldn't have returned a function")); 
       }else{
         done();
       }

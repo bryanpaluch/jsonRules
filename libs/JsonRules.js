@@ -11,9 +11,13 @@ function JsonRules( options){
 //false if rule doesn't
 
 JsonRules.prototype.doRule= function(rule, value, cb){
-var self= this; 
-  this.test(rule.ifs, value, function(result){
-    if(result){
+  var self= this;
+  this.test(rule.ifs, value, function(err, result){
+    if(err){
+      if(cb)
+        cb(err, null);
+    }
+    else if(result){
       var fn = self.getThen(rule, value);
       if(cb){
         cb(null, fn);
@@ -37,10 +41,17 @@ JsonRules.prototype.test = function(ifs, value, cb){
   });
   async.parallel(testFns, function(err, results){
     if(err){
-      cb(false);
+      if(err === "short-circuit")
+        cb(null, false);
+      else
+        cb(err, false);
     }
-    else 
-      cb(true);
+    else if(_.every(results,function(i){return i})){
+      cb(null, true);
+    }
+    else{
+      cb(null, false);
+    }
   });
 }
 
@@ -50,17 +61,19 @@ JsonRules.prototype._testIf =  function(ifstatement, values, cb){
   //test each attr if they are _object, _value or Catalog functions
   //return the async capatible function for returning that value
   var fns = _.map(operands, function(operand){
-    if(operand._object)
+    if(_.has(operand, '_object'))
       return function(cb){cb(null, values[operand._object])};
-    else if(operand._value)
+    else if(_.has(operand, '_value'))
       return function(cb){cb(null, operand._value)};
-    else if(operand._catalog){
+    else if(_.has(operand,'_catalog')){
       var fn = self.getWrappedCatalogFn(operand._catalog, values);
         if(fn){
           return function(cb){return fn(cb)};
         }
         else
           return function(cb){return cb("error", false);};
+    }else{
+      return function(cb){cb(new Error("unsupported operand type"), false)};
     }
   });
   //get values and then test
@@ -68,7 +81,7 @@ JsonRules.prototype._testIf =  function(ifstatement, values, cb){
   //rules that are false
   async.parallel(fns, function(err, results){
     if(err){
-      return cb("error", false);
+      return cb(err, false);
     }
     var result = null;
     switch(ifstatement.test){
@@ -102,7 +115,7 @@ JsonRules.prototype._testIf =  function(ifstatement, values, cb){
     if(result){
       return cb(null, true);
     }else{
-      return cb("error", false);
+      return cb("short-circuit", false);
     }
   });
 }
