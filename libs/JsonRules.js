@@ -1,6 +1,6 @@
 var _     = require('underscore');
 var async = require('async');
-
+var jsonpath = require('JSONPath').eval;
 
 function JsonRules( options){
   var options = options ? options : {};
@@ -65,6 +65,9 @@ JsonRules.prototype._testIf =  function(ifstatement, values, cb){
       return function(cb){cb(null, values[operand._object])};
     else if(_.has(operand, '_value'))
       return function(cb){cb(null, operand._value)};
+    else if(_.has(operand, '_JSONPath')){
+      return function(cb){cb(null, jsonpath(values, operand._JSONPath)[0])};
+    }
     else if(_.has(operand,'_catalog')){
       var fn = self.getWrappedCatalogFn(operand._catalog, values);
         if(fn){
@@ -129,6 +132,8 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
             return values[arg._object];
           else if(arg._value)
             return arg._value;
+          else if(arg._JSONPath)
+            return jsonpath(values, arg._JSONPath)[0];
           else
             return null;
         });
@@ -155,10 +160,18 @@ JsonRules.prototype.getThen = function(rule, values){
 // {_object: foo}
 function parse(attribute){
   if(_.isString(attribute)){
-    var ar = attribute.split('.');
-    var obj = {};
-    obj[ar[0]] = ar[1];
-    return obj;
+    if(attribute.charAt(0) === "$"){
+      //Don't actually parse JSONPath objects
+      var obj = {}; 
+      obj['_JSONPath'] = attribute;
+      return obj;
+    }
+    else{
+      var ar = attribute.split('.');
+      var obj = {};
+      obj[ar[0]] = ar[1];
+      return obj;
+    }
   }else if(_.isObject(attribute)){
     return attribute;
   }

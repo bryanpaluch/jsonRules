@@ -1,6 +1,6 @@
 {
   "name": "jsonrules",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "A rule engine with pure json based syntax and function catalog",
   "main": "index.js",
   "scripts": {
@@ -14,7 +14,8 @@
   "license": "MIT",
   "dependencies": {
     "async": "~0.2.3",
-    "underscore": "~1.4.4"
+    "underscore": "~1.4.4",
+    "JSONPath": "~0.9.1"
   },
   "gitHead": "220441c1bf795c423c18b5aab0f9def764d408e6",
   "directories": {
@@ -22,7 +23,8 @@
     "example": "example"
   },
   "devDependencies": {
-    "mocha": "latest"},
+    "mocha": "latest"
+  },
   "keywords": [
     "rules",
     "json",

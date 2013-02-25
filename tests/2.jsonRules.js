@@ -61,6 +61,19 @@ var shortCircuitRule = {
                   args: ['_object.temp']}
     }
 };
+var jsonPathRule = {
+  ifs: [
+    { operands: [ '$.lastReading.temp', '$.lastReading.setTemp'],
+      test: "<"
+    }
+  ],
+  then:
+    { _catalog: {name: 'setTemp',
+                 args: ['$.lastReading.setTemp']}
+    }
+}
+
+
 var badFormatIfs =
     { operands: [ '_ovject.relay', '_object.relay'
                 ],
@@ -146,6 +159,21 @@ describe("JsonRules.doRule", function(){
     catalog.addFn(exampleThen, 'setTemp', this);
     var ruleEngine = new JsonRules({catalog: catalog});
     ruleEngine.doRule(exampleRule, value1, function(err, fn){
+      if(fn){
+      fn(function(){
+        done();
+      });
+      }else
+      done('error');
+    });
+  });
+  it("tests a rule, and callbacks with fn if it passes rule uses JSONPath notation", function(done){
+    var exampleThen = function(word,cb){return cb()}
+    var catalog = new FnCatalog();
+    catalog.addFn(exampleThen, 'setTemp', this);
+    var ruleEngine = new JsonRules({catalog: catalog});
+    var value1= {lastReading:{temp: 60, setTemp: 70}, relay: 1};
+    ruleEngine.doRule(jsonPathRule, value1, function(err, fn){
       if(fn){
       fn(function(){
         done();
