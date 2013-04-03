@@ -80,7 +80,9 @@ var badFormatIfs =
       test: '=='
     };
 
-var getOtherSensorByUserId = function(userid, timeout,cb){
+var getOtherSensorByUserId = function(argArray,cb){
+  var userid = argArray[0];
+  var timeout = argArray[1];
   setTimeout(function(){
     if(userid === '1234')
        cb(null, 1);

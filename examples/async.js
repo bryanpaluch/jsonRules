@@ -3,11 +3,14 @@ var FnCatalog = require('../index').FnCatalog;
 
 var catalog = new FnCatalog();
 
-var switchRelay = function(word){console.log('Switching on Relay because the temp is ' + word);
-return word};
+var switchRelay = function(word){console.log('Switching on Relay because the temp is ' + word[0]);
+return word[0]};
 catalog.addFn(switchRelay, 'switchRelay', this);
 
-var getOtherSensorByUserId = function(userid, timeout,cb){
+var getOtherSensorByUserId = function(argArray,cb){
+  var userid = argArray[0];
+  var timeout = argArray[1];
+
   console.log("Get other relay value running for user:", userid, "with timeout: ", timeout);
   setTimeout(function(){
     if(userid === '1234')

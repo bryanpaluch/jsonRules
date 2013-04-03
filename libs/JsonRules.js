@@ -138,11 +138,11 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
             return null;
         });
         return (function(cb){
-          appliedArgs.push(cb); 
-          return fn.apply(this,appliedArgs)});
+          console.log(appliedArgs);
+          return fn.apply(this,[appliedArgs, cb])});
       }
       else
-        return (function(cb){return fn.apply(this, [cb])});
+        return (function(cb){return fn.apply(this, [null, cb])});
     }else{
       return null;
     }
