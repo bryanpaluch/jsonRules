@@ -12,24 +12,29 @@ function JsonRules( options){
 
 JsonRules.prototype.doRule= function(rule, value, cb){
   var self= this;
-  this.test(rule.ifs, value, function(err, result){
-    if(err){
-      if(cb)
-        cb(err, null);
-    }
-    else if(result){
-      var fn = self.getThen(rule, value);
-      if(cb){
-        cb(null, fn);
+  //If all else fails don't throw
+  try{
+    this.test(rule.ifs, value, function(err, result){
+      if(err){
+        if(cb)
+          cb(err, null);
+      }
+      else if(result){
+        var fn = self.getThen(rule, value);
+        if(cb){
+          cb(null, fn);
+        }else{
+          fn();
+        }
       }else{
-        fn();
+        if(cb){
+          cb(null, null);
+        }
       }
-    }else{
-      if(cb){
-        cb(null, null);
-      }
-    }
-  });
+    });
+  }catch(e){
+    cb(e, null);
+  }
 }
 JsonRules.prototype.test = function(ifs, value, cb){
   var self = this; 
@@ -138,11 +143,11 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
             return null;
         });
         return (function(cb){
-          appliedArgs.push(cb); 
-          return fn.apply(this,appliedArgs)});
+          console.log(appliedArgs);
+          return fn.apply(this,[appliedArgs, cb])});
       }
       else
-        return (function(cb){return fn.apply(this, [cb])});
+        return (function(cb){return fn.apply(this, [null, cb])});
     }else{
       return null;
     }

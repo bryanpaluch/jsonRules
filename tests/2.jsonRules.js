@@ -80,7 +80,9 @@ var badFormatIfs =
       test: '=='
     };
 
-var getOtherSensorByUserId = function(userid, timeout,cb){
+var getOtherSensorByUserId = function(argArray,cb){
+  var userid = argArray[0];
+  var timeout = argArray[1];
   setTimeout(function(){
     if(userid === '1234')
        cb(null, 1);
@@ -216,6 +218,19 @@ describe("JsonRules.doRule", function(){
     catalog.addFn(getOtherSensorByUserId, 'getOtherSensorByUserId', this);
     var ruleEngine = new JsonRules({catalog: catalog});
     ruleEngine.doRule(shortCircuitRule, value1, function(err, fn){
+      if(fn){
+        throw(new Error("Shouldn't have returned a function")); 
+      }else{
+        done();
+      }
+    });
+  });
+  it("tests a rule that just is an empty object {} doesn't throw", function(done){
+    var exampleThen = function(word){return "example"}
+    var catalog = new FnCatalog();
+    var ruleEngine = new JsonRules({catalog: catalog});
+    ruleEngine.doRule({}, value1, function(err, fn){
+      assert.ok(err);
       if(fn){
         throw(new Error("Shouldn't have returned a function")); 
       }else{
