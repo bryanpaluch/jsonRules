@@ -142,12 +142,19 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
           else
             return null;
         });
-        return (function(cb){
+        return (function(user, cb){
           console.log(appliedArgs);
-          return fn.apply(this,[appliedArgs, cb])});
+          if(!cb){
+            cb = user;
+          }
+          return fn.apply(this,[appliedArgs, user, cb])});
       }
       else
-        return (function(cb){return fn.apply(this, [null, cb])});
+        return (function(user, cb){
+          if(!cb){
+            cb = user;
+          }
+          return fn.apply(this, [null,user, cb])});
     }else{
       return null;
     }

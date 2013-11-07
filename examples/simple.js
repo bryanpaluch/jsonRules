@@ -3,7 +3,7 @@ var FnCatalog = require('../index').FnCatalog;
 
 var catalog = new FnCatalog();
 
-var setTemp = function(word){console.log('Setting Temperature ' + word);
+var setTemp = function(word, user, cb){console.log('Setting Temperature ' + word + " for user " , user);
 return word};
 catalog.addFn(setTemp, 'setTemp', this);
 
@@ -37,7 +37,7 @@ ruleEngine.doRule(ruleHeat, {temp: 60, setTemp: 62, relay: 1}, function(err, the
   }
   if(then){
     console.log('doing action since it was returned');
-    var word = then();
+    var word = then('bryan');
     console.log(word);
   }else{
     console.log('rule did not pass, do nothing');
