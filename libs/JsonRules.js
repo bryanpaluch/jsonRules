@@ -89,6 +89,7 @@ JsonRules.prototype._testIf =  function(ifstatement, values, cb){
   //rules that are false
   async.parallel(fns, function(err, results){
     if(err){
+      // Error while executing the if
       return cb(err, false);
     }
     var result = null;
@@ -121,8 +122,10 @@ JsonRules.prototype._testIf =  function(ifstatement, values, cb){
         result = false;
     }
     if(result){
+      // If statement passed
       return cb(null, true);
     }else{
+      // If did not pass
       return cb("short-circuit", false);
     }
   });
@@ -143,7 +146,6 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
             return null;
         });
         return (function(user, cb){
-          console.log(appliedArgs);
           if(!cb){
             cb = user;
           }
@@ -160,12 +162,18 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
     }
 }
 JsonRules.prototype.getThen = function(rule, values){
-  if(rule.then._catalog){
+  if(Array.isArray(rule.then)){
+    var fns = [];
+    rule.then.forEach((function(then){
+      fns.push(this.getWrappedCatalogFn(then._catalog, values));
+    }).bind(this));
+    return fns;
+  }else if(typeof rule.then === 'object'){
     var fn = this.getWrappedCatalogFn(rule.then._catalog, values);
     return fn; 
-  } 
-  else
+  }else
     return null;
+
 }
 //returns an object from a period separated object ie
 // "_object.foo"

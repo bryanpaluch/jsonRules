@@ -73,6 +73,22 @@ var jsonPathRule = {
     }
 }
 
+var multiThenRule = {
+  ifs : [
+    { operands: [ '_object.temp', '_object.setTemp'],
+      test: '<',
+    },
+  ],
+  then:
+    [
+      { _catalog : {name: 'setTemp',
+                  args: ['_object.temp']}},
+      { _catalog : {name: 'setTemp',
+                  args: ['_object.setTemp']}}
+
+    ]
+};
+
 
 var badFormatIfs =
     { operands: [ '_ovject.relay', '_object.relay'
@@ -184,6 +200,26 @@ describe("JsonRules.doRule", function(){
       done('error');
     });
   });
+  it("tests a rule, and callbacks with fn if it passes, returns multiple fns because rule has multiple thens", function(done){
+    var exampleThen = function(word,user, cb){return cb(word)}
+    var catalog = new FnCatalog();
+    catalog.addFn(exampleThen, 'setTemp', this);
+    var ruleEngine = new JsonRules({catalog: catalog});
+    ruleEngine.doRule(multiThenRule, value1, function(err, fn){
+      assert.ok(Array.isArray(fn));
+      if(fn){
+        fn[0]('user1', function(temp){
+          assert.equal(temp, value1.temp);
+         fn[1]('user1', function(setTemp){
+          assert.equal(setTemp, value1.setTemp);
+          done();
+          });
+        });
+      }else
+        done('error');
+    });
+  });
+
 
 
   it("tests a rule, and callbacks with fn if it passes rule uses JSONPath notation", function(done){
