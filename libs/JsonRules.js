@@ -175,7 +175,7 @@ JsonRules.prototype.getThen = function(rule, values){
     var fns = [];
     rule.then.forEach((function(then){
       var fn = this.getWrappedCatalogFn(then._catalog, values);
-      fn.name = then._catalog.name;
+      fn.fnName = then._catalog.name;
       fn.priority = then._catalog.priority || 100;
       fns.push(fn);
     }).bind(this));
