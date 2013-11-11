@@ -3,14 +3,14 @@ var ruleHeat = {
     { operands: [ '_object.temp', '_object.setTemp'],
       test: '<',
     },
-    { operands: [ '_object.relay', {_value: 1}],
+    { operands: [ '_object.relay',  1],
       test: '==',
     },
   ],
   then:
     {
       _catalog : {name: 'setTemp', 
-                  args: ['_object.setTemp']}
+                  args: ['_object.setTemp', 40]}
     }
 };
 

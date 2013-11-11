@@ -33,7 +33,8 @@ JsonRules.prototype.doRule= function(rule, value, cb){
       }
     });
   }catch(e){
-    cb(e, null);
+    if(cb)
+      cb(e, null);
   }
 }
 JsonRules.prototype.test = function(ifs, value, cb){
@@ -66,7 +67,11 @@ JsonRules.prototype._testIf =  function(ifstatement, values, cb){
   //test each attr if they are _object, _value or Catalog functions
   //return the async capatible function for returning that value
   var fns = _.map(operands, function(operand){
-    if(_.has(operand, '_object'))
+    if(_.isNumber(operand))
+      return function(cb){cb(null, operand)};
+    else if(_.isString(operand) && operand.charAt(0) != '_')
+      return function(cb){cb(null, operand)};
+    else if(_.has(operand, '_object'))
       return function(cb){cb(null, values[operand._object])};
     else if(_.has(operand, '_value'))
       return function(cb){cb(null, operand._value)};
@@ -136,7 +141,11 @@ JsonRules.prototype.getWrappedCatalogFn = function(catalog, values){
       if(catalog.args){
         var argsObj = _.map(catalog.args, function(attr){return parse(attr);});
         var appliedArgs = _.map(argsObj, function(arg){
-          if(arg._object)
+          if(_.isNumber(arg))
+            return arg;
+          else if(_.isString(arg))
+            return arg;
+          else if(arg._object)
             return values[arg._object];
           else if(arg._value)
             return arg._value;
@@ -173,7 +182,6 @@ JsonRules.prototype.getThen = function(rule, values){
     return fns;
   }else if(typeof rule.then === 'object'){
     var fn = this.getWrappedCatalogFn(rule.then._catalog, values);
-    console.log(rule.then._catalog.name);
     fn.fnName = rule.then._catalog.name;
     fn.priority = rule.then._catalog.priority || 100;
     return fn; 
@@ -192,13 +200,16 @@ function parse(attribute){
       obj['_JSONPath'] = attribute;
       return obj;
     }
-    else{
+    else if(attribute.charAt(0) === "_"){
       var ar = attribute.split('.');
       var obj = {};
       obj[ar[0]] = ar[1];
       return obj;
+    }else{
+      return attribute;
     }
-  }else if(_.isObject(attribute)){
+  }
+  else {
     return attribute;
   }
 }

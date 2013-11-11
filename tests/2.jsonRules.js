@@ -19,6 +19,26 @@ var exampleRule = {
     }
 };
 
+var exampleRuleSimple = {
+  ifs : [
+    { operands: [ '_object.temp', '_object.setTemp'],
+      test: '<',
+    },
+    { operands: [ '_object.relay', 1],
+      test: '==',
+    },
+    { operands: [ 'simple', 'simple'],
+      test: '==',
+    },
+  ],
+  then:
+    {
+      _catalog : {name: 'setTemp',
+                  args: ["simple"]}
+    }
+};
+
+
 var ifs = exampleRule.ifs;
 var then = exampleRule.then;
 var value1= {temp: 60, setTemp: 70, relay: 1};
@@ -183,7 +203,6 @@ describe("JsonRules.doRule", function(){
 
       if(fn){
         assert.equal(fn(), exampleThen());
-        console.log(fn);
         assert.ok(fn.fnName);
         assert.ok(fn.priority);
         return done();
@@ -207,6 +226,25 @@ describe("JsonRules.doRule", function(){
       done('error');
     });
   });
+  it("tests a rule with the simplified syntax, and callbacks with fn if it passes, the fn is wrapped and can also receive a cb", function(done){
+    var exampleThen = function(word,cb){return cb(word)}
+    var catalog = new FnCatalog();
+    catalog.addFn(exampleThen, 'setTemp', this);
+    var ruleEngine = new JsonRules({catalog: catalog});
+    ruleEngine.doRule(exampleRuleSimple, value1, function(err, fn){
+      if(err)
+        return done(err);
+
+      if(fn){
+      fn(function(word){
+        assert.equal(word, 'simple');
+        return done();
+      });
+      }else
+        return done('error');
+    });
+  });
+
   it("tests a rule, and callbacks with fn if it passes, the fn is wrapped and can receive 2 argruements one extra and a cb", function(done){
     var exampleThen = function(word,user, cb){return cb(user)}
     var catalog = new FnCatalog();
