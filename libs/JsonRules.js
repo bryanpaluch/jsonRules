@@ -165,11 +165,17 @@ JsonRules.prototype.getThen = function(rule, values){
   if(Array.isArray(rule.then)){
     var fns = [];
     rule.then.forEach((function(then){
-      fns.push(this.getWrappedCatalogFn(then._catalog, values));
+      var fn = this.getWrappedCatalogFn(then._catalog, values);
+      fn.name = then._catalog.name;
+      fn.priority = then._catalog.priority || 100;
+      fns.push(fn);
     }).bind(this));
     return fns;
   }else if(typeof rule.then === 'object'){
     var fn = this.getWrappedCatalogFn(rule.then._catalog, values);
+    console.log(rule.then._catalog.name);
+    fn.fnName = rule.then._catalog.name;
+    fn.priority = rule.then._catalog.priority || 100;
     return fn; 
   }else
     return null;

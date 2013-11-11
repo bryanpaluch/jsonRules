@@ -171,6 +171,28 @@ describe("JsonRules.doRule", function(){
       done('error');
     });
   });
+  it("tests a rule, and callbacks with fn if it passes, fn will have properies for catalog name and priority", function(done){
+    var exampleThen = function(word){return "example"}
+    var catalog = new FnCatalog();
+    catalog.addFn(exampleThen, 'setTemp', this);
+    var ruleEngine = new JsonRules({catalog: catalog});
+    ruleEngine.doRule(exampleRule, value1, function(err, fn){
+      
+      if(err)
+        return done(err);
+
+      if(fn){
+        assert.equal(fn(), exampleThen());
+        console.log(fn);
+        assert.ok(fn.fnName);
+        assert.ok(fn.priority);
+        return done();
+      }else{
+        return done('error');
+      }
+    });
+  });
+
   it("tests a rule, and callbacks with fn if it passes, the fn is wrapped and can also receive a cb", function(done){
     var exampleThen = function(word,cb){return cb()}
     var catalog = new FnCatalog();
